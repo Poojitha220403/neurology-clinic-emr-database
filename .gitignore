@@ -1,0 +1,15 @@
+# Secrets
+.env
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+~$*
+# Large media (hosted elsewhere)
+*.mp4
+*.mov
