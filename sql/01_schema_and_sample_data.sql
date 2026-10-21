@@ -299,9 +299,9 @@ WITH CTE_VisitGaps AS (
         v.visitID,
         v.visitDate,
         LEAD(v.visitDate) OVER (PARTITION BY v.patientID ORDER BY v.visitDate) AS nextVisitDate,
-        DATEDIFF(day, v.visitDate, 
-                  LEAD(v.visitDate) OVER (PARTITION BY v.patientID ORDER BY v.visitDate)
-                 ) AS dayGap
+        DATEDIFF(LEAD(v.visitDate) OVER (PARTITION BY v.patientID ORDER BY v.visitDate),
+                 v.visitDate
+                ) AS dayGap
     FROM Visit_details v
 )
 

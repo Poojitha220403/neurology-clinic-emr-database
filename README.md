@@ -2,6 +2,7 @@
 
 A normalized (BCNF) **MySQL** database for an outpatient neurology clinic, with a role-based **Python** command-line interface, stored procedures, an audit-log trigger, analytical views and performance indexes.
 
+![CI](https://github.com/Poojitha220403/neurology-clinic-emr-database/actions/workflows/ci.yml/badge.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 
@@ -84,6 +85,23 @@ python neuro_emr_app.py
 ```
 
 You can also open the `.sql` files in MySQL Workbench and run them in order.
+
+## Testing
+
+On every push, GitHub Actions starts a **MySQL 8** container, builds the database from both SQL scripts (failing on any SQL error), and runs `pytest`:
+
+- **Schema:** all 10 tables, 6 views, 2 stored procedures and the indexes exist.
+- **Data and procedures:** sample rows and updates are applied; `GetPatientByID` and `AddPrescription` work, and a prescription for a non-existent visit is rejected by the foreign key.
+- **Auditing:** updating a patient writes an `Audit_Log` row through the trigger.
+- **Analytics:** the diagnosis-frequency view and the shortest-interval-between-visits query return the expected results.
+- **Python helpers:** SHA-256 hashing and table output.
+
+Run locally against your own MySQL:
+
+```bash
+pip install -r app/requirements.txt -r requirements-dev.txt
+EMR_DB_HOST=127.0.0.1 EMR_DB_PASSWORD=<root password> pytest -q   # without EMR_DB_HOST, only unit tests run
+```
 
 ## Results
 

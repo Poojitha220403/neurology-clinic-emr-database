@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      EMR_DB_HOST: 127.0.0.1
+      EMR_DB_USER: root
+      EMR_DB_PASSWORD: ci-root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r app/requirements.txt -r requirements-dev.txt
+      - run: ruff check .
+      - name: Build database from the SQL scripts (fails on any SQL error)
+        run: |
+          mysql -h 127.0.0.1 -uroot -p"$EMR_DB_PASSWORD" < sql/01_schema_and_sample_data.sql > /dev/null
+          mysql -h 127.0.0.1 -uroot -p"$EMR_DB_PASSWORD" neurology_clinic_emr_system < sql/02_rbac_procedures_views_indexes.sql
+      - run: pytest -q -rs
